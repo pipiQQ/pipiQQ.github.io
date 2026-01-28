@@ -1,3 +1,16 @@
+---
+layout:     post
+title:      "VS Code remote debug in Docker"
+subtitle:   "vs code"
+date:       2026-01-28 20:40:00
+author:     "vs code"
+catalog: false
+published: true
+header-style: text
+tags:
+  - vs code
+---
+
 1. 修改宿主机的/etc/apt/sources.list 
 2.下载ubuntu镜像
 3.运行镜像，在容器中安装gcc,gdb,cmake等一系列程序
