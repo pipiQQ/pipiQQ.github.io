@@ -12,12 +12,12 @@ tags:
 ---
 
 1. 修改宿主机的/etc/apt/sources.list 
-2.下载ubuntu镜像
-3.运行镜像，在容器中安装gcc,gdb,cmake等一系列程序
-4.sudo docker run --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -it --name mypro -p 30022:22 ubuntu bash 
-5.使用vscode连接容器，配置免密访问该容器
-6.在容器中放置inv源代码
-7.参考tasks.json,launch.json配置单步跟踪
+2. 下载ubuntu镜像
+3. 运行镜像，在容器中安装gcc,gdb,cmake等一系列程序
+4. sudo docker run --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -it --name mypro -p 30022:22 ubuntu bash 
+5. 使用vscode连接容器，配置免密访问该容器
+6. 在容器中放置inv源代码
+7. 参考tasks.json,launch.json配置单步跟踪
   tasks.json:
             "type": "shell",
             "label": "makeshell",
