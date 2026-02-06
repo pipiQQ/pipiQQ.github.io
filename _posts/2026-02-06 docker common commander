@@ -1,8 +1,0 @@
-sudo docker run --privileged=true --cap-add=SYS_PTRACE --security-opt seccomp=unconfined \
--itd --name llvm \
--p 30023:22 -p 4455:2222 \
---restart always \
--v /root/llvm:/workspace \
--w /workspace \
-ubuntu-llvm:v1.1 \
-/bin/bash
