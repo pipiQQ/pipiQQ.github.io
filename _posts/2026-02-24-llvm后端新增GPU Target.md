@@ -158,3 +158,57 @@ ninja LLVMMyGPUCodeGen llc
 - 如果只改了某个 `.cpp`，Ninja 的增量编译很快，改动 `.td` 文件则会触发较多重新编译。
 
 所以整个开发循环就是：**改代码 → `ninja llc` → `llc -march=mygpu` 测试**，反复迭代。
+
+
+
+
+## `ninja intrinsics_gen` 的作用
+
+`intrinsics_gen` 是一个 **TableGen 代码生成目标**，专门用来从 `.td` 文件生成与 **Intrinsic 函数**相关的头文件。
+
+---
+
+## 具体做什么
+
+运行后会用 `llvm-tblgen` 处理 `llvm/include/llvm/IR/Intrinsics.td`，生成：
+
+```
+include/llvm/IR/IntrinsicEnums.inc      # 所有 intrinsic 的枚举值（Intrinsic::xxx）
+include/llvm/IR/IntrinsicImpl.inc       # intrinsic 的类型签名、属性信息
+```
+
+这些 `.inc` 文件会被 `llvm/include/llvm/IR/Intrinsics.h` 包含，供整个 LLVM 编译使用。
+
+---
+
+## 为什么要单独跑它
+
+在完整编译 LLVM 之前，很多 C++ 文件都 `#include` 了 `Intrinsics.h`，如果 `.inc` 文件还没生成，编译就会报错。所以：
+
+- **首次编译**时，很多模块依赖它，需要先生成
+- **修改了 `Intrinsics.td` 或目标相关的 `*Intrinsics.td`**（如新增 GPU 的 intrinsic），需要重新跑它来更新 `.inc`
+- CI / 代码分析工具（如 clangd、IntelliSense）也常常需要先跑这一步才能正常解析代码
+
+---
+
+## 在新增 GPU 场景下的关系
+
+如果你的新 GPU 定义了自己的 intrinsic，比如：
+
+```
+llvm/include/llvm/IR/IntrinsicsMyGPU.td
+```
+
+需要在 `Intrinsics.td` 中 `include` 它，然后跑：
+
+```bash
+ninja intrinsics_gen
+```
+
+之后新的 `Intrinsic::mygpu_xxx` 枚举才会出现，其他代码才能引用它。
+
+---
+
+## 简单类比
+
+可以把它理解为：**所有 intrinsic 的"注册表"的代码生成步骤**，是后续编译的前置依赖。
