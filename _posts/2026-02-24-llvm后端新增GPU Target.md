@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "LLVM Backend Add a new GPU"
+title:      "LLVM后端新增GPU Target"
 subtitle:   "llvm"
 date:       2026-02-24 20:40:00
 author:     "Claude"
