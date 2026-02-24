@@ -111,3 +111,51 @@ GPU 后端通常还需要额外考虑：
 | `SPIRV` | 输出 SPIR-V 格式，适合 Vulkan/OpenCL |
 
 建议从 **NVPTX** 开始参考，它结构相对清晰，是研究 GPU 后端的好起点。整体工作量在几万行代码量级，核心难点在于 ISelLowering 和 TableGen 指令描述的完整性。
+
+
+使用ninja llc重新编译出新的llc程序
+
+流程大致如下：
+
+## 编译流程
+
+**1. 配置 CMake（包含新目标）**
+
+```bash
+cmake -G Ninja \
+  -DLLVM_TARGETS_TO_BUILD="X86;AMDGPU;MyGPU" \  # 加入新目标
+  -DCMAKE_BUILD_TYPE=Release \
+  ../llvm
+```
+
+**2. 用 Ninja 编译 llc**
+
+```bash
+ninja llc
+# 或者只编译你的目标库加 llc
+ninja LLVMMyGPUCodeGen llc
+```
+
+编译成功后，`bin/llc` 就包含了你新增的 GPU 后端。
+
+---
+
+## 验证新目标已注册
+
+```bash
+# 查看是否列出了新目标
+./bin/llc --version
+
+# 用新目标编译一个 IR 文件
+./bin/llc -march=mygpu test.ll -o test.s
+```
+
+---
+
+## 开发阶段的建议
+
+- TableGen 文件改动后，Ninja 会自动重新运行 `llvm-tblgen` 生成对应的 `.inc` 文件，再编译 C++，**不需要手动干预**。
+- 初期调试可以只 `ninja llc`，不必全量 `ninja`，节省时间。
+- 如果只改了某个 `.cpp`，Ninja 的增量编译很快，改动 `.td` 文件则会触发较多重新编译。
+
+所以整个开发循环就是：**改代码 → `ninja llc` → `llc -march=mygpu` 测试**，反复迭代。
